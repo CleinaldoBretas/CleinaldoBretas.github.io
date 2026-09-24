@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laboratório OAuth — RA 2026108872</title>
+</head>
+<body>
+  <main>
+    <h1>Laboratório de autenticação</h1>
+
+    <p>
+      <a href="/oauth/login/google">Entrar com Google</a>
+    </p>
+
+    <p>
+      <a href="/oauth/login/github">Entrar com GitHub</a>
+    </p>
+
+    <button id="logout" type="button">Sair</button>
+    <pre id="status">Consultando sessão...</pre>
+  </main>
+
+  <script>
+    const statusElement = document.querySelector("#status");
+    const logoutButton = document.querySelector("#logout");
+
+    async function consultarSessao() {
+      try {
+        const resposta = await fetch("/api/me", {
+          credentials: "same-origin",
+          cache: "no-store"
+        });
+
+        if (resposta.status === 401) {
+          statusElement.textContent = "Não autenticado.";
+          return;
+        }
+
+        const dados = await resposta.json();
+        statusElement.textContent = JSON.stringify(dados, null, 2);
+      } catch {
+        statusElement.textContent = "Não foi possível consultar a sessão.";
+      }
+    }
+
+    logoutButton.addEventListener("click", async () => {
+      const resposta = await fetch("/oauth/logout", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (resposta.ok) {
+        statusElement.textContent = "Sessão encerrada.";
+      } else {
+        statusElement.textContent = "Não foi possível encerrar a sessão.";
+      }
+    });
+
+    consultarSessao();
+  </script>
+</body>
+</html>
